@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام كاشير ومخازن - كيان الشواية البخاري</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Tajawal', sans-serif; }
+        body { background-color: #f4f6f9; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        
+        header {
+            background: linear-gradient(135deg, #d35400, #e67e22); color: white;
+            text-align: center; padding: 12px 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        header h1 { font-size: 24px; font-weight: 800; }
+        .header-controls { display: flex; align-items: center; gap: 15px; }
+        .date-time { font-size: 15px; font-weight: 700; background: rgba(255, 255, 255, 0.2); padding: 5px 15px; border-radius: 20px; }
+        .btn-admin-nav { background: #2c3e50; color: white; border: none; padding: 6px 15px; border-radius: 20px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .btn-admin-nav:hover { background: #1a252f; }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 15px;
+            background: #fdf2e9;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid #f5cba7;
+        }
+        .cat-btn {
+            display: flex; align-items: center; justify-content: center; gap: 15px;
+            background: white; border: 2.5px solid #e67e22; border-radius: 12px; 
+            padding: 18px 10px; 
+            font-size: 18px; font-weight: 800; color: #2c3e50; cursor: pointer; transition: 0.2s;
+            width: 100%;
+        }
+        .cat-btn img { width: 45px; height: 45px; object-fit: cover; border-radius: 8px; }
+        .cat-btn:hover { background: #fef5ef; transform: translateY(-2px); }
+        .cat-btn.active { background: #e67e22; color: white; border-color: #d35400; box-shadow: 0 4px 12px rgba(230,126,34,0.35); }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(44, 62, 80, 0.95); display: flex; justify-content: center; align-items: center; z-index: 9999;
+        }
+        .modal-content {
+            background: white; padding: 30px; border-radius: 12px; width: 420px; text-align: center; max-height: 95vh; overflow-y: auto;
+        }
+        .modal-content h3 { margin-bottom: 20px; color: #2c3e50; font-size: 20px; border-bottom: 2px solid #e67e22; padding-bottom: 5px; }
+        .modal-content input, .modal-content select {
+            width: 100%; padding: 10px; margin-bottom: 12px; border: 2px solid #bdc3c7; border-radius: 8px; font-size: 16px; text-align: center; font-weight: bold;
+        }
+
+        .admin-box { width: 950px !important; display: flex; flex-direction: column; gap: 20px; }
+        .admin-panels-split { display: flex; gap: 20px; }
+        .admin-sub-panel { flex: 1; background: #fff; padding: 15px; border: 1px solid #e2e8f0; border-radius: 8px; }
+        .admin-sub-panel h4 { color: #e67e22; margin-bottom: 10px; font-size: 16px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        
+        .admin-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .admin-table th, .admin-table td { padding: 8px; border: 1px solid #e2e8f0; text-align: center; font-size: 13px; }
+        .admin-table th { background: #f8f9fa; font-weight: 700; }
+        .stock-danger { background-color: #fadbd8 !important; color: #c0392b; font-weight: bold; }
+
+        .pos-container { display: flex; flex: 1; padding: 15px; gap: 15px; overflow: hidden; }
+        .menu-section { flex: 1.8; background: white; border-radius: 12px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.03); display: flex; flex-direction: column; }
+        .menu-section h2, .invoice-section h2 { font-size: 18px; color: #2c3e50; border-bottom: 2px solid #ecf0f1; padding-bottom: 8px; margin-bottom: 15px; }
+        .items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; overflow-y: auto; padding-left: 5px; flex: 1; }
+
+        .item-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; }
+        .item-card:hover { border-color: #e67e22; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(230, 126, 34, 0.15); }
+        .item-img { width: 100%; height: 100px; object-fit: cover; background-color: #f7fafc; }
+        .item-details { padding: 10px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; flex: 1; }
+        .item-name { font-size: 15px; font-weight: 700; color: #2c3e50; margin-bottom: 5px; }
+        .item-price { color: #27ae60; font-weight: 800; font-size: 14px; }
+
+        .invoice-section { flex: 1.2; background: white; border-radius: 12px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.03); display: flex; flex-direction: column; }
+        .invoice-table-container { flex: 1; overflow-y: auto; }
+        .invoice-table { width: 100%; border-collapse: collapse; }
+        .invoice-table th, .invoice-table td { padding: 10px; text-align: right; border-bottom: 1px solid #f0f3f4; font-size: 14px; }
+        .invoice-table th { background: #f8f9fa; color: #7f8c8d; font-weight: 700; }
+        .delete-btn { background: #e74c3c; color: white; border: none; width: 24px; height: 24px; border-radius: 6px; cursor: pointer; }
+
+        .invoice-summary { background: #fcfcfc; border-top: 2px solid #e67e22; padding-top: 15px; margin-top: 15px; }
+        .summary-row { display: flex; justify-content: space-between; font-size: 14px; color: #7f8c8d; margin-bottom: 5px; }
+        .total-row { font-size: 22px; font-weight: 800; color: #2c3e50; margin-top: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; }
+        .total-row .price-num { color: #e67e22; }
+
+        .shift-info-box { background: #ebf5fb; border-right: 4px solid #2980b9; padding: 10px; border-radius: 4px; margin-bottom: 10px; font-size: 14px; font-weight: 700; display: flex; justify-content: space-between; }
+        .action-buttons { display: flex; gap: 10px; margin-bottom: 8px; }
+        .btn { flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; color: white; text-align: center;}
+        .btn-clear { background: #95a5a6; }
+        .btn-print { background: #27ae60; }
+        .btn-danger { background: #e74c3c; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+        .btn-shift-close { background: #d35400; width: 100%; margin-top: 5px; }
+
+        footer { background: #2c3e50; color: #ffffff; text-align: center; padding: 10px; font-size: 14px; font-weight: 700; border-top: 3px solid #e67e22; }
+
+        #thermal-receipt, #shift-report-receipt { display: none; }
+
+        @media print {
+            body * { display: none !important; }
+            #thermal-receipt, #shift-report-receipt { display: block !important; width: 74mm; margin: 0 auto; padding: 0; direction: rtl; background: #fff; color: #000; }
+            .receipt-header { text-align: center; margin-bottom: 8px; border-bottom: 1px dashed #000; padding-bottom: 5px; }
+            .receipt-header h3 { font-size: 15px; font-weight: 800; margin-bottom: 3px; }
+            .receipt-header p { font-size: 11px; margin-bottom: 2px; }
+            .receipt-table { width: 100%; border-collapse: collapse; margin-top: 5px; }
+            .receipt-table th, .receipt-table td { font-size: 11px; padding: 5px 2px; text-align: right; }
+            .receipt-table th { border-bottom: 1px solid #000; }
+            .receipt-divider { border-top: 1px dashed #000; margin: 6px 0; }
+            .receipt-total-row { display: flex; justify-content: space-between; font-size: 13px; font-weight: 800; padding: 2px 0; }
+            .receipt-footer { text-align: center; font-size: 10px; margin-top: 12px; border-top: 1px dashed #000; padding-top: 5px; font-weight: bold; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="shift-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h3>إغلاق الوردية وتصفية الصندوق</h3>
+            <p style="font-size: 14px; color: #7f8c8d; margin-bottom: 15px;">الرجاء إدخال الكاش الفعلي في الدرج حالياً (ر.س):</p>
+            <input type="number" id="shift-cash-input" placeholder="0.00" min="0">
+            <button class="btn" style="width: 100%; background: #d35400;" onclick="submitShiftCloseAction()">طباعة التقرير وإقفال الدرج</button>
+            <button class="btn btn-clear" style="width: 100%; margin-top: 8px; padding: 6px;" onclick="document.getElementById('shift-modal').style.display='none'">إلغاء</button>
+        </div>
+    </div>
+
+    <div id="admin-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content admin-box">
+            <h3>لوحة الإدارة والتحكم المركزي بمخازن المطعم</h3>
+            <div class="admin-panels-split">
+                <div class="admin-sub-panel">
+                    <h4>🍔 إضافة وجبات المنيو</h4>
+                    <div style="display: flex; flex-direction: column; gap: 5px;">
+                        <input type="text" id="new-item-name" placeholder="اسم الوجبة">
+                        <input type="number" id="new-item-price" placeholder="السعر (ريال سعودي)" min="0">
+                        <select id="new-item-category">
+                            <option value="popular">أكلات شعبية</option>
+                            <option value="lunch">غداء</option>
+                            <option value="maasoub">المعصوب</option>
+                            <option value="drinks">مشروبات</option>
+                        </select>
+                        <select id="new-item-recipe">
+                            <option value="chicken_rice">وصفة: 1 دجاج + 0.5 كجم أرز</option>
+                            <option value="half_chicken">وصفة: 0.5 دجاج + 0.25 كجم أرز</option>
+                            <option value="rice_only">وصفة: 0.5 كجم أرز فقط</option>
+                            <option value="drink">وصفة: 1 مشروب غازي</option>
+                        </select>
+                        <button class="btn btn-print" style="padding: 8px;" onclick="createItem()">إضافة الصنف</button>
+                    </div>
+                    <div style="max-height: 180px; overflow-y: auto; margin-top: 10px;">
+                        <table class="admin-table">
+                            <thead><tr><th>الوجبة</th><th>السعر</th><th>حذف</th></tr></thead>
+                            <tbody id="admin-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="admin-sub-panel">
+                    <h4>📦 المستودع والجرد</h4>
+                    <div style="background: #fdf2e9; padding: 10px; border-radius: 6px; margin-bottom: 10px;">
+                        <div style="display:flex; gap:5px;">
+                            <select id="supply-material-select" style="margin:0; padding:5px;">
+                                <option value="chicken">دجاج طازج (حبة)</option>
+                                <option value="rice">أرز خام (كجم)</option>
+                                <option value="drinks">مشروبات غازية (علبة)</option>
+                            </select>
+                            <input type="number" id="supply-qty-input" placeholder="الكمية" style="margin:0; padding:5px;" min="0">
+                            <button class="btn btn-print" style="padding:5px;" onclick="addStockSupply()">توريد</button>
+                        </div>
+                    </div>
+                    <table class="admin-table">
+                        <thead><tr><th>المادة الخام</th><th>المخزون</th><th>الوحدة</th><th>الحالة</th></tr></thead>
+                        <tbody id="inventory-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+            <button class="btn btn-clear" style="width: 200px; margin: 0 auto;" onclick="closeAdminPanel()">إغلاق</button>
+        </div>
+    </div>
+
+    <header>
+        <h1>مطعم كيان الشواية البخاري</h1>
+        <div class="header-controls">
+            <button class="btn-admin-nav" onclick="checkAdminPassword()">🔑 لوحة الإدارة والمخازن</button>
+            <div class="date-time" id="datetime">--:--:--</div>
+        </div>
+    </header>
+
+    <main class="pos-container">
+        <section class="menu-section">
+            <h2>قائمة الطعام والمشويات</h2>
+            
+            <div class="category-grid">
+                <button class="cat-btn active" id="cat-popular" onclick="switchCategory('popular')">
+                    <img src="https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=100" alt="بروست">
+                    أكلات شعبية
+                </button>
+                <button class="cat-btn" id="cat-lunch" onclick="switchCategory('lunch')">
+                    <img src="https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=100" alt="غداء">
+                    غداء
+                </button>
+                <button class="cat-btn" id="cat-maasoub" onclick="switchCategory('maasoub')">
+                    <img src="https://images.unsplash.com/photo-1541832676-9b763b0239ab?w=100" alt="معصوب">
+                    المعصوب
+                </button>
+                <button class="cat-btn" id="cat-drinks" onclick="switchCategory('drinks')">
+                    <img src="https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=100" alt="مشروبات">
+                    مشروبات
+                </button>
+            </div>
+
+            <div class="items-grid" id="items-grid"></div>
+        </section>
+
+        <section class="invoice-section">
+            <h2>الفاتورة والوردية</h2>
+            <div class="shift-info-box">
+                <span>صندوق الوردية الحالي:</span>
+                <span><span id="view-sales-cash" style="color: #27ae60; font-size: 16px;">0</span> ريال سعودي</span>
+            </div>
+            <div class="invoice-table-container">
+                <table class="invoice-table">
+                    <thead><tr><th>الصنف</th><th style="width: 50px; text-align: center;">الكمية</th><th>السعر</th><th style="width: 30px;"></th></tr></thead>
+                    <tbody id="invoice-body"></tbody>
+                </table>
+            </div>
+            <div class="invoice-summary">
+                <div class="summary-row"><span>عدد الأصناف بالفاتورة:</span><span id="items-count">0</span></div>
+                <div class="total-row"><span>الإجمالي الكلي:</span><span><span id="total-price" class="price-num">0</span> ريال سعودي</span></div>
+                <div class="action-buttons">
+                    <button class="btn btn-clear" onclick="clearInvoice()">إلغاء</button>
+                    <button class="btn btn-print" onclick="printInvoice()">طباعة الفاتورة</button>
+                </div>
+                <button class="btn btn-shift-close" onclick="promptCloseShift()">إغلاق الوردية الحالي وتصفية الصندوق</button>
+            </div>
+        </section>
+    </main>
+
+    <footer>تصميم المهندس عبدالرحمن الاكوع 773579486 (967+)</footer>
+
+    <div id="thermal-receipt">
+        <div class="receipt-header">
+            <h3>مطعم كيان الشواية البخاري</h3>
+            <p>رقم الفاتورة: #<span id="receipt-inv-id">1001</span></p>
+            <p id="receipt-date">التاريخ: </p>
+        </div>
+        <table class="receipt-table">
+            <thead>
+                <tr>
+                    <th>الصنف</th>
+                    <th style="text-align:center; width:40px;">الكمية</th>
+                    <th style="text-align:left; width:60px;">السعر</th>
+                </tr>
+            </thead>
+            <tbody id="receipt-items-body"></tbody>
+        </table>
+        <div class="receipt-divider"></div>
+        <div class="receipt-total-row">
+            <span>الإجمالي الكلي:</span>
+            <span id="receipt-total-val">0 ريال سعودي</span>
+        </div>
+        <div class="receipt-footer">
+            <p>شاشات المحاسبة والمخازن - المهندس عبدالرحمن الاكوع</p>
+            <p>773579486 967+</p>
+        </div>
+    </div>
+
+    <div id="shift-report-receipt">
+        <div class="receipt-header">
+            <h3>تقرير إغلاق الوردية والصندوق</h3>
+            <p id="report-date">التاريخ: </p>
+        </div>
+        <div class="receipt-divider"></div>
+        <div class="receipt-total-row" style="margin: 5px 0;">
+            <span>إجمالي مبيعات الجهاز الموثقة:</span>
+            <span id="rep-sales">0</span>
+        </div>
+        <div class="receipt-divider"></div>
+        <div class="receipt-total-row" style="margin: 5px 0;">
+            <span>الكاش الفعلي بالدرج:</span>
+            <span id="rep-actual">0</span>
+        </div>
+        <div class="receipt-total-row" style="margin: 5px 0; font-weight: 800;">
+            <span>النتيجة النهائية للمطابقة:</span>
+            <span id="rep-diff">0</span>
+        </div>
+        <div class="receipt-footer">
+            <p>نظام المحاسبة والمخازن - تصميم المهندس عبدالرحمن الاكوع</p>
+        </div>
+    </div>
+
+    <script>
+        const { ipcRenderer } = require('electron');
+
+        let menuItems = [];
+        let inventoryData = {};
+        let cart = []; 
+        let invoiceCounter = 1001; 
+        let totalSalesCash = 0;
+        let currentCategory = 'popular';
+
+        window.onload = function() { refreshData(); };
+        function refreshData() { ipcRenderer.send('get-initial-data'); }
+
+        ipcRenderer.on('initial-data-response', (event, data) => {
+            menuItems = data.menu || [];
+            inventoryData = {};
+            if(data.inventory) {
+                data.inventory.forEach(item => { inventoryData[item.material] = item.qty; });
+            }
+            renderMenu();
+            renderInventoryTable();
+        });
+
+        ipcRenderer.on('menu-updated', () => { refreshData(); });
+        ipcRenderer.on('inventory-updated', () => { refreshData(); });
+
+        function switchCategory(cat) {
+            currentCategory = cat;
+            document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`cat-${cat}`).classList.add('active');
+            renderMenu();
+        }
+
+        function renderMenu() {
+            const grid = document.getElementById('items-grid'); 
+            grid.innerHTML = '';
+            const filteredItems = menuItems.filter(item => item.category === currentCategory);
+            
+            filteredItems.forEach(item => {
+                const card = document.createElement('div'); 
+                card.className = 'item-card';
+                card.innerHTML = `<img src="${item.img}" class="item-img"><div class="item-details"><div class="item-name">${item.name}</div><div class="item-price">${item.price} ر.س</div></div>`;
+                card.onclick = () => addToCart(item); 
+                grid.appendChild(card);
+            });
+        }
+
+        function checkAdminPassword() {
+            const password = prompt("الرجاء إدخال كلمة مرور الإدارة والمخازن:");
+            if (password === "1234") { openAdminPanel(); }
+            else if (password !== null) { alert("كلمة المرور خاطئة! صلاحية مرفوضة."); }
+        }
+
+        function openAdminPanel() {
+            document.getElementById('admin-modal').style.display = 'flex';
+            renderAdminTable();
+            renderInventoryTable();
+        }
+
+        function closeAdminPanel() { document.getElementById('admin-modal').style.display = 'none'; }
+
+        function renderInventoryTable() {
+            const tbody = document.getElementById('inventory-table-body');
+            if(inventoryData.chicken === undefined) return;
+            tbody.innerHTML = `
+                <tr class="${inventoryData.chicken <= 15 ? 'stock-danger' : ''}"><td>دجاج طازج</td><td>${inventoryData.chicken.toFixed(1)}</td><td>حبة</td><td>${inventoryData.chicken <= 15 ? '⚠️ حرج' : '✅ آمن'}</td></tr>
+                <tr class="${inventoryData.rice <= 20 ? 'stock-danger' : ''}"><td>أرز خام</td><td>${inventoryData.rice.toFixed(2)}</td><td>كجم</td><td>${inventoryData.rice <= 20 ? '⚠️ حرج' : '✅ آمن'}</td></tr>
+                <tr class="${inventoryData.drinks <= 24 ? 'stock-danger' : ''}"><td>مشروبات غازية</td><td>${inventoryData.drinks.toFixed(0)}</td><td>علبة</td><td>${inventoryData.drinks <= 24 ? '⚠️ حرج' : '✅ آمن'}</td></tr>
+            `;
+        }
+
+        function addStockSupply() {
+            const material = document.getElementById('supply-material-select').value;
+            const qty = parseFloat(document.getElementById('supply-qty-input').value) || 0;
+            if (qty <= 0) { alert('الرجاء كتابة كمية صحيحة'); return; }
+            ipcRenderer.send('update-inventory-stock', { material: material, qty: qty });
+            document.getElementById('supply-qty-input').value = '';
+        }
+
+        function renderAdminTable() {
+            const tbody = document.getElementById('admin-table-body'); 
+            tbody.innerHTML = '';
+            menuItems.forEach((item) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${item.name}</td><td>${item.price} ر.س</td><td><button class="btn btn-danger" onclick="deleteItem(${item.id})">حذف</button></td>`;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function createItem() {
+            const name = document.getElementById('new-item-name').value;
+            const price = parseFloat(document.getElementById('new-item-price').value);
+            const category = document.getElementById('new-item-category').value;
+            const recipe = document.getElementById('new-item-recipe').value;
+            if (!name || isNaN(price) || price < 0) { alert('أكمل البيانات بطريقة صحيحة'); return; }
+            
+            let defaultImg = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200';
+            if (category === 'popular') defaultImg = 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=200';
+            else if (category === 'maasoub') defaultImg = 'https://images.unsplash.com/photo-1541832676-9b763b0239ab?w=200';
+            else if (category === 'drinks') defaultImg = 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=200';
+
+            ipcRenderer.send('add-menu-item', { name: name, price: price, recipe: recipe, category: category, img: defaultImg });
+            document.getElementById('new-item-name').value = ''; 
+            document.getElementById('new-item-price').value = '';
+        }
+
+        function deleteItem(id) {
+            if(confirm("هل أنت متأكد من حذف الصنف نهائياً من المنيو؟")) ipcRenderer.send('delete-menu-item', id);
+        }
+
+        function addToCart(item) {
+            const existingItem = cart.find(cartItem => cartItem.id === item.id);
+            if (existingItem) { existingItem.qty += 1; } else { cart.push({ ...item, qty: 1 }); }
+            updateInvoice();
+        }
+
+        function updateInvoice() {
+            const tbody = document.getElementById('invoice-body'); 
+            const totalEl = document.getElementById('total-price'); 
+            const countEl = document.getElementById('items-count');
+            tbody.innerHTML = ''; 
+            let total = 0; 
+            let count = 0;
+            
+            cart.forEach((item, index) => {
+                total += (item.price * item.qty); 
+                count += item.qty;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${item.name}</td><td style="text-align:center;">${item.qty}</td><td>${item.price * item.qty} ر.س</td><td><button class="delete-btn" onclick="removeItem(${index})">×</button></td>`;
+                tbody.appendChild(tr);
+            });
+            totalEl.textContent = total.toFixed(2); 
+            countEl.textContent = count;
+        }
+
+        function removeItem(index) { cart.splice(index, 1); updateInvoice(); }
+        function clearInvoice() { cart = []; updateInvoice(); }
+
+        function printInvoice() {
+            if (cart.length === 0) { alert("السلة فارغة! لا توجد أصناف لطباعتها."); return; }
+            ipcRenderer.send('deduct-stock-on-sale', cart);
+
+            const currentTotal = parseFloat(document.getElementById('total-price').textContent);
+            totalSalesCash += currentTotal; 
+            document.getElementById('view-sales-cash').textContent = totalSalesCash.toFixed(2);
+            
+            document.getElementById('receipt-date').textContent = "التاريخ: " + new Date().toLocaleString('ar-YE');
+            document.getElementById('receipt-inv-id').textContent = invoiceCounter;
+            
+            const receiptBody = document.getElementById('receipt-items-body'); 
+            receiptBody.innerHTML = '';
+            cart.forEach(item => {
+                const tr = document.createElement('tr'); 
+                tr.innerHTML = `<td>${item.name}</td><td style="text-align:center;">${item.qty}</td><td style="text-align:left;">${(item.price * item.qty).toFixed(2)} ر.س</td>`;
+                receiptBody.appendChild(tr);
+            });
+            document.getElementById('receipt-total-val').textContent = currentTotal.toFixed(2) + " ر.س";
+            
+            document.getElementById('shift-report-receipt').style.setProperty('display', 'none', 'important');
+            document.getElementById('thermal-receipt').style.setProperty('display', 'block', 'important');
+            
+            ipcRenderer.send('print-receipt');
+            invoiceCounter++; 
+            setTimeout(() => { clearInvoice(); }, 1000);
+        }
+
+        function promptCloseShift() { document.getElementById('shift-modal').style.display = 'flex'; }
+
+        function submitShiftCloseAction() {
+            const actualCash = parseFloat(document.getElementById('shift-cash-input').value);
+            if(isNaN(actualCash) || actualCash < 0) { alert('الرجاء إدخال رقم كاش صحيح'); return; }
+            
+            const difference = actualCash - totalSalesCash;
+
+            document.getElementById('report-date').textContent = "التاريخ والوقت: " + new Date().toLocaleString('ar-YE');
+            document.getElementById('rep-sales').textContent = totalSalesCash.toFixed(2) + " ر.س";
+            document.getElementById('rep-actual').textContent = actualCash.toFixed(2) + " ر.س";
+            
+            const diffEl = document.getElementById('rep-diff');
+            if (difference === 0) { diffEl.textContent = "متطابق تماماً (0)"; }
+            else if (difference > 0) { diffEl.textContent = "فائض (+ " + difference.toFixed(2) + " ر.س)"; }
+            else { diffEl.textContent = "عجز (" + difference.toFixed(2) + " ر.س)"; }
+
+            document.getElementById('thermal-receipt').style.setProperty('display', 'none', 'important');
+            document.getElementById('shift-report-receipt').style.setProperty('display', 'block', 'important');
+            
+            ipcRenderer.send('print-receipt');
+            
+            setTimeout(() => { 
+                document.getElementById('shift-modal').style.display = 'none';
+                location.reload(); 
+            }, 1500);
+        }
+
+        setInterval(() => { 
+            document.getElementById('datetime').textContent = new Date().toLocaleString('ar-YE', { hour12: true }); 
+        }, 1000);
+    </script>
+</body>
+</html>
+
