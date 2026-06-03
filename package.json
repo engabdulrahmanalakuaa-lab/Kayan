@@ -1,0 +1,42 @@
+{
+  "name": "kayan-alhojari-pos",
+  "version": "1.0.0",
+  "description": "نظام كاشير ومخازن مطعم كيان الشواية البخاري",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win --x64"
+  },
+  "keywords": [],
+  "author": "Eng. Abdulrahman Al-Akwaa",
+  "license": "ISC",
+  "dependencies": {
+    "@vscode/sqlite3": "^5.1.8"
+  },
+  "devDependencies": {
+    "electron": "^30.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.kayan.pos",
+    "productName": "Kayan_Al_Bukhari_POS",
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "requestedExecutionLevel": "requireAdministrator"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "مطعم كيان الشواية البخاري"
+    },
+    "files": [
+      "**/*",
+      "!dist"
+    ]
+  }
+}
+
