@@ -11,11 +11,12 @@
   "author": "Eng. Abdulrahman Al-Akwaa",
   "license": "ISC",
   "dependencies": {
-    "@vscode/sqlite3": "^5.1.8"
+    "sqlite3": "^5.1.8"
   },
   "devDependencies": {
     "electron": "^30.0.0",
-    "electron-builder": "^24.13.3"
+    "electron-builder": "^24.13.3",
+    "electron-rebuild": "^3.2.9"
   },
   "build": {
     "appId": "com.kayan.pos",
@@ -39,4 +40,3 @@
     ]
   }
 }
-
