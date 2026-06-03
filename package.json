@@ -5,18 +5,18 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "dist": "electron-builder --win --x64"
+    "dist": "electron-builder --win --x64",
+    "postinstall": "electron-builder install-app-deps"
   },
   "keywords": [],
   "author": "Eng. Abdulrahman Al-Akwaa",
   "license": "ISC",
   "dependencies": {
-    "sqlite3": "^5.1.8"
+    "better-sqlite3": "^11.7.0"
   },
   "devDependencies": {
     "electron": "^30.0.0",
-    "electron-builder": "^24.13.3",
-    "electron-rebuild": "^3.2.9"
+    "electron-builder": "^24.13.3"
   },
   "build": {
     "appId": "com.kayan.pos",
