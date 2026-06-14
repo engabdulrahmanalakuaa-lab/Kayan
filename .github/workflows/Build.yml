@@ -14,8 +14,8 @@ jobs:
         with:
           node-version: 22
           cache: 'npm'
-      - name: تثبيت الحزم
-        run: npm ci
+      - name: تثبيت الحزم (بدون قفل)
+        run: npm install --no-package-lock
       - name: إعادة بناء native modules
         run: npx electron-rebuild -f -w better-sqlite3
       - name: بناء EXE
