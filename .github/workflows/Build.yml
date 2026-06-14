@@ -1,32 +1,29 @@
-name: Build Kayan POS to EXE
+name: Build & Release EXE
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
   workflow_dispatch:
-
 jobs:
-  release:
+  build-windows:
     runs-on: windows-latest
     steps:
-      - name: Check out repository code
+      - name: استنساخ المستودع
         uses: actions/checkout@v4
-
-      - name: Install Node.js
+      - name: تثبيت Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-
-      - name: Install Dependencies
+          cache: 'npm'
+      - name: تثبيت الحزم
         run: npm install
-
-      - name: Build Electron App to EXE
+      - name: إعادة بناء native modules
+        run: npx electron-rebuild -f -w better-sqlite3
+      - name: بناء EXE
         run: npm run dist
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload EXE Artifact
+      - name: رفع EXE كـ Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Kayan-Bukhari-POS-Installer
-          path: "**/*.exe"
+          name: تقنيات-سوفت-مطاعم-Installer
+          path: dist/*.exe
