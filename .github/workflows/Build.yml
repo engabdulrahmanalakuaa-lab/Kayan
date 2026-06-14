@@ -12,10 +12,10 @@ jobs:
       - name: تثبيت Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
       - name: تثبيت الحزم
-        run: npm install
+        run: npm ci
       - name: إعادة بناء native modules
         run: npx electron-rebuild -f -w better-sqlite3
       - name: بناء EXE
